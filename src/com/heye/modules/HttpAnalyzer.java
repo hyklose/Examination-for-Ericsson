@@ -1,13 +1,18 @@
 package com.heye.modules;
 
 import java.io.IOException;
+import java.util.Collections;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import com.heye.common.BookInfo;
 import com.heye.manager.BookList;
+import com.heye.manager.UrlQueue;
 
 public class HttpAnalyzer {
+	public static int index = 0;
+	
 	Document httpdocument = null;
 	BookInfo bookinfo = null;
 	
@@ -16,12 +21,20 @@ public class HttpAnalyzer {
 		boolean result = true;
 		
 		if( !Url.contains( "/subject/" ) || Url.contains( "icn" ) || Url.contains( "#" ) ) {
+			index = 10;
 			return result;
 		}
-		String url = Url.substring( 0, 40);
+		String url = Url.substring( 0, 39);
+		
+		if( Collections.frequency( UrlQueue.BookUrl, url ) >= 0 ) {
+			index = 10;
+			return result;
+		}
 		
 		boolean condition = false;
 		BookList booklist = new BookList();
+		
+		index++;
 		
 		try {
 			httpdocument = this.getHttpDocument( url );
@@ -31,6 +44,7 @@ public class HttpAnalyzer {
 			if( condition == true ) {
 				BookList.Mutex.lock();
 				booklist.AddNewBook( bookinfo );
+				UrlQueue.BookUrl.add( url );
 				BookList.Mutex.unlock();
 			}
 			

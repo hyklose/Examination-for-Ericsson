@@ -29,25 +29,22 @@ public class ProcessThread extends Thread {
 			String url = (String) UrlQueue.UnVisitedUrlDeQueue();
 			UrlQueue.Mutex.unlock();
 			
-			if( UrlQueue.BookUrl.size() == 0 ) {
-				
-			}
-			else {
-				if( Collections.frequency( UrlQueue.BookUrl, url.substring( 0, 39) ) < 0 ) {
-					while( !analyzer.analyze( url ) ) {
-					}
-					UrlQueue.BookUrl.add( url.substring( 0, 39) );
+			while( !analyzer.analyze( url ) ) {
+				if( HttpAnalyzer.index > 3 ) {
+					HttpAnalyzer.index = 0;
+					break;
 				}
 			}
+			
 			UrlQueue.AddVisitedUrl( url );
-			Set<String> links = UrlSpider.ExtracLinks( url, filter);
+			Set<String> links = UrlSpider.ExtracLinks( url, filter );
 			for (String link : links) {
 				UrlQueue.AddUnvisitedUrl( link );
 			}
 			
 			System.out.println( url );
 			try {
-				Thread.sleep(5);
+				Thread.sleep(10);
 			}
 			catch (InterruptedException e) {
 				// TODO Auto-generated catch block
